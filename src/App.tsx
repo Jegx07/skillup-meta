@@ -10,6 +10,10 @@ import SignupPage from "./components/auth/SignupPage";
 import Dashboard from "./components/dashboard/Dashboard";
 import SkillsInput from "./components/skills/SkillsInput";
 import CareerGoals from "./components/career/CareerGoals";
+import GapAnalysis from "./pages/GapAnalysis";
+import Recommendations from "./pages/Recommendations";
+import Progress from "./pages/Progress";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,10 +32,10 @@ const App = () => (
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="skills-input" element={<SkillsInput />} />
             <Route path="career-goals" element={<CareerGoals />} />
-            <Route path="gap-analysis" element={<div className="text-center p-8">Gap Analysis Coming Soon</div>} />
-            <Route path="recommendations" element={<div className="text-center p-8">Recommendations Coming Soon</div>} />
-            <Route path="progress" element={<div className="text-center p-8">Progress Tracker Coming Soon</div>} />
-            <Route path="profile" element={<div className="text-center p-8">Profile Coming Soon</div>} />
+            <Route path="gap-analysis" element={<GapAnalysis />} />
+            <Route path="recommendations" element={<Recommendations />} />
+            <Route path="progress" element={<Progress />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
