@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { FileUpload, Upload, Link2, Plus, X } from 'lucide-react';
+import { Upload, Link2, Plus, X } from 'lucide-react';
 
 const SkillsInput = () => {
   const [manualSkills, setManualSkills] = useState('');
@@ -45,7 +44,6 @@ const SkillsInput = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Manual Skills Input */}
         <Card className="glass glow-hover">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -89,7 +87,6 @@ const SkillsInput = () => {
           </CardContent>
         </Card>
 
-        {/* Resume Upload */}
         <Card className="glass glow-hover">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -125,7 +122,7 @@ const SkillsInput = () => {
 
             <div className="grid grid-cols-2 gap-3">
               <Button variant="outline" className="glass glass-hover">
-                <FileUpload className="w-4 h-4 mr-2" />
+                <Upload className="w-4 h-4 mr-2" />
                 Browse Files
               </Button>
               <Button variant="outline" className="glass glass-hover">
@@ -137,7 +134,6 @@ const SkillsInput = () => {
         </Card>
       </div>
 
-      {/* Integration Options */}
       <Card className="glass">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -172,7 +168,6 @@ const SkillsInput = () => {
         </CardContent>
       </Card>
 
-      {/* Current Skills */}
       <Card className="glass">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
