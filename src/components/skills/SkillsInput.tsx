@@ -5,23 +5,24 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Upload, Link2, Plus, X } from 'lucide-react';
+import { useUserSkills } from './UserSkillsContext';
 
 const SkillsInput = () => {
+  const { skills, addSkill, removeSkill } = useUserSkills();
   const [manualSkills, setManualSkills] = useState('');
-  const [skillsList, setSkillsList] = useState([
-    'JavaScript', 'React', 'Python', 'SQL', 'Git'
-  ]);
   const [newSkill, setNewSkill] = useState('');
+  const [newLevel, setNewLevel] = useState(50);
 
-  const addSkill = () => {
-    if (newSkill.trim() && !skillsList.includes(newSkill.trim())) {
-      setSkillsList([...skillsList, newSkill.trim()]);
+  const handleAddSkill = () => {
+    if (newSkill.trim() && !skills.find(s => s.skill === newSkill.trim())) {
+      addSkill({ skill: newSkill.trim(), level: newLevel });
       setNewSkill('');
+      setNewLevel(50);
     }
   };
 
-  const removeSkill = (skillToRemove: string) => {
-    setSkillsList(skillsList.filter(skill => skill !== skillToRemove));
+  const handleRemoveSkill = (skillName: string) => {
+    removeSkill(skillName);
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,10 +77,18 @@ const SkillsInput = () => {
                   placeholder="Enter skill name"
                   value={newSkill}
                   onChange={(e) => setNewSkill(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addSkill()}
                   className="glass"
                 />
-                <Button onClick={addSkill} className="glow-hover">
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={newLevel}
+                  onChange={(e) => setNewLevel(Number(e.target.value))}
+                  className="glass w-24"
+                  placeholder="Level"
+                />
+                <Button onClick={handleAddSkill} className="glow-hover">
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
@@ -178,7 +187,7 @@ const SkillsInput = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <span>🏷️</span>
-            Current Skills ({skillsList.length})
+            Current Skills ({skills.length})
           </CardTitle>
           <CardDescription>
             Review and manage your skill portfolio
@@ -186,23 +195,23 @@ const SkillsInput = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
-            {skillsList.map((skill, index) => (
+            {skills.map((skill, index) => (
               <Badge
                 key={index}
                 variant="secondary"
                 className="px-3 py-1 flex items-center gap-2 glass glass-hover"
               >
                 <span className="flex items-center gap-2">
-                  {skill}
+                  {skill.skill} ({skill.level})
                   <X
                     className="w-3 h-3 cursor-pointer hover:text-destructive"
-                    onClick={() => removeSkill(skill)}
+                    onClick={() => handleRemoveSkill(skill.skill)}
                   />
                 </span>
               </Badge>
             ))}
           </div>
-          {skillsList.length === 0 && (
+          {skills.length === 0 && (
             <p className="text-muted-foreground text-center py-8">
               No skills added yet. Start by adding your first skill above!
             </p>
@@ -215,11 +224,3 @@ const SkillsInput = () => {
 
 export default SkillsInput;
 
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-export default SkillsInput;
