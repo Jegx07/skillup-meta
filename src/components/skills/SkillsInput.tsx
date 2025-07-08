@@ -1,77 +1,34 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, Link2, Github, Linkedin } from 'lucide-react';
-import SkillsAutocomplete from './SkillsAutocomplete';
-import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { Upload, Link2, Plus, X } from 'lucide-react';
 
 const SkillsInput = () => {
   const [manualSkills, setManualSkills] = useState('');
   const [skillsList, setSkillsList] = useState([
     'JavaScript', 'React', 'Python', 'SQL', 'Git'
   ]);
-  const { toast } = useToast();
+  const [newSkill, setNewSkill] = useState('');
 
-  const parseAndAddSkills = () => {
-    if (manualSkills.trim()) {
-      const newSkills = manualSkills
-        .split(',')
-        .map(skill => skill.trim())
-        .filter(skill => skill && !skillsList.includes(skill));
-      
-      if (newSkills.length > 0) {
-        setSkillsList([...skillsList, ...newSkills]);
-        setManualSkills('');
-        toast({
-          title: "Skills Added",
-          description: `Added ${newSkills.length} new skills to your profile.`,
-        });
-      }
+  const addSkill = () => {
+    if (newSkill.trim() && !skillsList.includes(newSkill.trim())) {
+      setSkillsList([...skillsList, newSkill.trim()]);
+      setNewSkill('');
     }
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    setSkillsList(skillsList.filter(skill => skill !== skillToRemove));
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Simulate skill extraction from resume
-      const extractedSkills = ['Project Management', 'Leadership', 'Data Analysis', 'Machine Learning'];
-      const newSkills = extractedSkills.filter(skill => !skillsList.includes(skill));
-      
-      if (newSkills.length > 0) {
-        setSkillsList([...skillsList, ...newSkills]);
-        toast({
-          title: "Resume Processed",
-          description: `Extracted ${newSkills.length} skills from your resume.`,
-        });
-      }
-    }
-  };
-
-  const simulateGitHubIntegration = () => {
-    const githubSkills = ['Docker', 'Kubernetes', 'CI/CD', 'MongoDB'];
-    const newSkills = githubSkills.filter(skill => !skillsList.includes(skill));
-    
-    if (newSkills.length > 0) {
-      setSkillsList([...skillsList, ...newSkills]);
-      toast({
-        title: "GitHub Integration",
-        description: `Found ${newSkills.length} skills from your repositories.`,
-      });
-    }
-  };
-
-  const simulateLinkedInIntegration = () => {
-    const linkedinSkills = ['Strategic Planning', 'Team Leadership', 'Business Development'];
-    const newSkills = linkedinSkills.filter(skill => !skillsList.includes(skill));
-    
-    if (newSkills.length > 0) {
-      setSkillsList([...skillsList, ...newSkills]);
-      toast({
-        title: "LinkedIn Integration",
-        description: `Imported ${newSkills.length} skills from your profile.`,
-      });
+      console.log('File uploaded:', file.name);
+      // Placeholder for file processing logic
     }
   };
 
@@ -94,30 +51,38 @@ const SkillsInput = () => {
               Manual Input
             </CardTitle>
             <CardDescription>
-              Type your skills with smart autocomplete suggestions
+              Type your skills directly or add them one by one
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Smart Skill Entry</label>
-              <SkillsAutocomplete
-                selectedSkills={skillsList}
-                onSkillsChange={setSkillsList}
-                placeholder="Start typing a skill (e.g., JavaScript, Python...)"
+              <label className="text-sm font-medium">Bulk Skills Entry</label>
+              <Textarea
+                placeholder="Enter your skills separated by commas (e.g., JavaScript, Python, React, Node.js...)"
+                value={manualSkills}
+                onChange={(e) => setManualSkills(e.target.value)}
+                className="glass min-h-[100px]"
               />
+              <Button className="w-full glow-hover">
+                <Plus className="w-4 h-4 mr-2" />
+                Parse & Add Skills
+              </Button>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Bulk Skills Entry</label>
-              <Textarea
-                placeholder="Enter multiple skills separated by commas (e.g., JavaScript, Python, React, Node.js...)"
-                value={manualSkills}
-                onChange={(e) => setManualSkills(e.target.value)}
-                className="glass min-h-[80px]"
-              />
-              <Button onClick={parseAndAddSkills} className="w-full glow-hover" disabled={!manualSkills.trim()}>
-                Parse & Add Skills
-              </Button>
+              <label className="text-sm font-medium">Add Individual Skill</label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enter skill name"
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && addSkill()}
+                  className="glass"
+                />
+                <Button onClick={addSkill} className="glow-hover">
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -154,6 +119,17 @@ const SkillsInput = () => {
                 </Button>
               </label>
             </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Button variant="outline" className="glass glass-hover">
+                <Upload className="w-4 h-4 mr-2" />
+                Browse Files
+              </Button>
+              <Button variant="outline" className="glass glass-hover">
+                <Link2 className="w-4 h-4 mr-2" />
+                From URL
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -165,32 +141,28 @@ const SkillsInput = () => {
             Platform Integrations
           </CardTitle>
           <CardDescription>
-            Import skills from your professional profiles
+            Import skills from your professional profiles (Coming Soon)
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button 
-              onClick={simulateLinkedInIntegration}
-              variant="outline" 
-              className="glass glass-hover h-16 flex-col gap-2 hover:border-blue-500/50"
-            >
-              <Linkedin className="w-6 h-6 text-blue-400" />
-              <span>LinkedIn Import</span>
-            </Button>
-            <Button 
-              onClick={simulateGitHubIntegration}
-              variant="outline" 
-              className="glass glass-hover h-16 flex-col gap-2 hover:border-gray-400/50"
-            >
-              <Github className="w-6 h-6" />
-              <span>GitHub Analysis</span>
-            </Button>
-            <Button variant="outline" className="glass glass-hover h-16 flex-col gap-2" disabled>
-              <div className="w-6 h-6 bg-orange-500 rounded flex items-center justify-center">
-                <span className="text-white text-xs font-bold">CSV</span>
+            <Button variant="outline" className="glass glass-hover h-16 flex-col" disabled>
+              <div className="w-8 h-8 bg-blue-600 rounded mb-2 flex items-center justify-center">
+                <span className="text-white text-sm font-bold">in</span>
               </div>
-              <span>CSV Import</span>
+              LinkedIn Import
+            </Button>
+            <Button variant="outline" className="glass glass-hover h-16 flex-col" disabled>
+              <div className="w-8 h-8 bg-gray-900 rounded mb-2 flex items-center justify-center">
+                <span className="text-white text-sm font-bold">GH</span>
+              </div>
+              GitHub Analysis
+            </Button>
+            <Button variant="outline" className="glass glass-hover h-16 flex-col" disabled>
+              <div className="w-8 h-8 bg-orange-500 rounded mb-2 flex items-center justify-center">
+                <span className="text-white text-sm font-bold">CV</span>
+              </div>
+              CSV Import
             </Button>
           </div>
         </CardContent>
@@ -203,15 +175,25 @@ const SkillsInput = () => {
             Current Skills ({skillsList.length})
           </CardTitle>
           <CardDescription>
-            Your comprehensive skill portfolio
+            Review and manage your skill portfolio
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <SkillsAutocomplete
-            selectedSkills={skillsList}
-            onSkillsChange={setSkillsList}
-            placeholder=""
-          />
+          <div className="flex flex-wrap gap-2">
+            {skillsList.map((skill, index) => (
+              <Badge
+                key={index}
+                variant="secondary"
+                className="px-3 py-1 flex items-center gap-2 glass glass-hover"
+              >
+                {skill}
+                <X
+                  className="w-3 h-3 cursor-pointer hover:text-destructive"
+                  onClick={() => removeSkill(skill)}
+                />
+              </Badge>
+            ))}
+          </div>
           {skillsList.length === 0 && (
             <p className="text-muted-foreground text-center py-8">
               No skills added yet. Start by adding your first skill above!
