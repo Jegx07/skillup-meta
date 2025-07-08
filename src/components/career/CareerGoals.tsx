@@ -3,241 +3,282 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Search, Target, TrendingUp, Star } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Target, Briefcase, Building, Calendar, X } from 'lucide-react';
+import CareerPathVisualization from './CareerPathVisualization';
+import { useToast } from '@/hooks/use-toast';
 
 const CareerGoals = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCareer, setSelectedCareer] = useState<string | null>(null);
+  const [targetRole, setTargetRole] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [companies, setCompanies] = useState<string[]>([]);
+  const [newCompany, setNewCompany] = useState('');
+  const [timeline, setTimeline] = useState('');
+  const [additionalInfo, setAdditionalInfo] = useState('');
+  const [showVisualization, setShowVisualization] = useState(false);
+  const { toast } = useToast();
 
-  const careerPaths = [
+  // Sample career path data
+  const sampleSteps = [
     {
-      id: 'frontend-dev',
-      title: 'Frontend Developer',
-      description: 'Build user interfaces and web experiences',
-      demand: 'High',
-      avgSalary: '$75,000 - $120,000',
-      skills: ['React', 'JavaScript', 'CSS', 'HTML', 'TypeScript', 'Redux'],
-      icon: '💻'
+      id: '1',
+      title: 'Foundation Skills',
+      description: 'Build core programming and development skills',
+      skills: ['JavaScript', 'HTML/CSS', 'Git', 'Problem Solving'],
+      certifications: [
+        { name: 'JavaScript Fundamentals', provider: 'Coursera', link: '#' },
+        { name: 'Git Version Control', provider: 'Udemy', link: '#' }
+      ],
+      timeframe: '3-4 months',
+      difficulty: 'Beginner' as const,
+      progress: 85,
+      status: 'completed' as const
     },
     {
-      id: 'data-scientist',
-      title: 'Data Scientist',
-      description: 'Analyze data to extract business insights',
-      demand: 'Very High',
-      avgSalary: '$95,000 - $150,000',
-      skills: ['Python', 'R', 'SQL', 'Machine Learning', 'Statistics', 'Pandas'],
-      icon: '📊'
+      id: '2',
+      title: 'Frontend Development',
+      description: 'Master modern frontend frameworks and tools',
+      skills: ['React', 'TypeScript', 'Tailwind CSS', 'State Management'],
+      certifications: [
+        { name: 'React Developer Certification', provider: 'Meta', link: '#' },
+        { name: 'TypeScript Fundamentals', provider: 'Microsoft', link: '#' }
+      ],
+      timeframe: '4-6 months',
+      difficulty: 'Intermediate' as const,
+      progress: 65,
+      status: 'current' as const
     },
     {
-      id: 'product-manager',
-      title: 'Product Manager',
-      description: 'Lead product strategy and development',
-      demand: 'High',
-      avgSalary: '$85,000 - $140,000',
-      skills: ['Product Strategy', 'Analytics', 'User Research', 'Agile', 'Communication'],
-      icon: '🎯'
+      id: '3',
+      title: 'Full Stack Development',
+      description: 'Learn backend technologies and database management',
+      skills: ['Node.js', 'Express', 'MongoDB', 'API Design', 'Authentication'],
+      certifications: [
+        { name: 'Node.js Certification', provider: 'OpenJS Foundation', link: '#' },
+        { name: 'MongoDB Developer', provider: 'MongoDB University', link: '#' }
+      ],
+      timeframe: '5-7 months',
+      difficulty: 'Advanced' as const,
+      progress: 0,
+      status: 'upcoming' as const
     },
     {
-      id: 'devops-engineer',
-      title: 'DevOps Engineer',
-      description: 'Bridge development and operations teams',
-      demand: 'Very High',
-      avgSalary: '$90,000 - $160,000',
-      skills: ['Docker', 'Kubernetes', 'AWS', 'CI/CD', 'Linux', 'Terraform'],
-      icon: '⚙️'
-    },
-    {
-      id: 'ux-designer',
-      title: 'UX Designer',
-      description: 'Design user-centered digital experiences',
-      demand: 'High',
-      avgSalary: '$70,000 - $115,000',
-      skills: ['Figma', 'User Research', 'Prototyping', 'Design Systems', 'Usability Testing'],
-      icon: '🎨'
-    },
-    {
-      id: 'full-stack-dev',
-      title: 'Full Stack Developer',
-      description: 'Work on both frontend and backend systems',
-      demand: 'Very High',
-      avgSalary: '$80,000 - $130,000',
-      skills: ['React', 'Node.js', 'MongoDB', 'Express', 'JavaScript', 'Git'],
-      icon: '🚀'
+      id: '4',
+      title: 'Senior Developer Skills',
+      description: 'Advanced architecture, team leadership, and system design',
+      skills: ['System Design', 'Team Leadership', 'Code Review', 'Mentoring', 'DevOps'],
+      certifications: [
+        { name: 'AWS Solutions Architect', provider: 'Amazon', link: '#' },
+        { name: 'Technical Leadership', provider: 'LinkedIn Learning', link: '#' }
+      ],
+      timeframe: '8-12 months',
+      difficulty: 'Advanced' as const,
+      progress: 0,
+      status: 'upcoming' as const
     }
   ];
 
-  const filteredCareers = careerPaths.filter(career =>
-    career.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    career.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const addCompany = () => {
+    if (newCompany.trim() && !companies.includes(newCompany.trim())) {
+      setCompanies([...companies, newCompany.trim()]);
+      setNewCompany('');
+    }
+  };
 
-  const selectedCareerData = careerPaths.find(career => career.id === selectedCareer);
+  const removeCompany = (companyToRemove: string) => {
+    setCompanies(companies.filter(company => company !== companyToRemove));
+  };
+
+  const handleGeneratePath = () => {
+    if (!targetRole || !industry) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in your target role and industry first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setShowVisualization(true);
+    toast({
+      title: "Career Path Generated",
+      description: "Your personalized career roadmap has been created!",
+    });
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="glass p-6 rounded-2xl border border-border/50">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-chrome bg-clip-text text-transparent mb-2">
-          Career Goal Selector
+          Career Goals & Planning
         </h1>
         <p className="text-muted-foreground">
-          Choose your target career path and discover the skills you need to succeed
+          Define your career aspirations and get a personalized roadmap to success
         </p>
       </div>
 
-      {/* Search */}
-      <Card className="glass">
-        <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search career paths..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 glass"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card className="glass glow-hover">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="w-5 h-5" />
+              Goal Definition
+            </CardTitle>
+            <CardDescription>
+              Tell us about your dream career path
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="target-role">Target Role</Label>
+              <Input
+                id="target-role"
+                placeholder="e.g., Senior Full Stack Developer"
+                value={targetRole}
+                onChange={(e) => setTargetRole(e.target.value)}
+                className="glass"
+              />
+            </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Career Options */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Target className="w-5 h-5" />
-            Available Career Paths
-          </h2>
-          <div className="space-y-3">
-            {filteredCareers.map((career) => (
-              <Card
-                key={career.id}
-                className={`glass cursor-pointer transition-all duration-200 ${
-                  selectedCareer === career.id
-                    ? 'border-primary/50 glow'
-                    : 'glass-hover'
-                }`}
-                onClick={() => setSelectedCareer(career.id)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="text-2xl">{career.icon}</div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-semibold">{career.title}</h3>
-                        <Badge variant={career.demand === 'Very High' ? 'default' : 'secondary'}>
-                          {career.demand} Demand
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {career.description}
-                      </p>
-                      <p className="text-sm font-medium text-primary">
-                        {career.avgSalary}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="industry">Industry</Label>
+              <Select value={industry} onValueChange={setIndustry}>
+                <SelectTrigger className="glass">
+                  <SelectValue placeholder="Select your target industry" />
+                </SelectTrigger>
+                <SelectContent className="glass backdrop-blur-xl border border-border/50">
+                  <SelectItem value="technology">Technology</SelectItem>
+                  <SelectItem value="finance">Finance</SelectItem>
+                  <SelectItem value="healthcare">Healthcare</SelectItem>
+                  <SelectItem value="ecommerce">E-commerce</SelectItem>
+                  <SelectItem value="education">Education</SelectItem>
+                  <SelectItem value="gaming">Gaming</SelectItem>
+                  <SelectItem value="consulting">Consulting</SelectItem>
+                  <SelectItem value="startup">Startup</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-        {/* Selected Career Details */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Star className="w-5 h-5" />
-            Career Details
-          </h2>
-          
-          {selectedCareerData ? (
-            <Card className="glass glow">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span className="text-2xl">{selectedCareerData.icon}</span>
-                  {selectedCareerData.title}
-                </CardTitle>
-                <CardDescription>{selectedCareerData.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="glass p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Market Demand</p>
-                    <p className="font-semibold text-primary">{selectedCareerData.demand}</p>
-                  </div>
-                  <div className="glass p-3 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Salary Range</p>
-                    <p className="font-semibold text-primary text-sm">{selectedCareerData.avgSalary}</p>
-                  </div>
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="timeline">Desired Timeline</Label>
+              <Select value={timeline} onValueChange={setTimeline}>
+                <SelectTrigger className="glass">
+                  <SelectValue placeholder="When do you want to achieve this?" />
+                </SelectTrigger>
+                <SelectContent className="glass backdrop-blur-xl border border-border/50">
+                  <SelectItem value="6months">6 months</SelectItem>
+                  <SelectItem value="1year">1 year</SelectItem>
+                  <SelectItem value="2years">2 years</SelectItem>
+                  <SelectItem value="3years">3+ years</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-                <div>
-                  <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4" />
-                    Required Skills
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCareerData.skills.map((skill, index) => (
-                      <Badge key={index} variant="outline" className="glass">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <Button className="w-full glow-hover metallic-gradient text-white">
-                  Set as Career Goal
+            <div className="space-y-2">
+              <Label>Dream Companies</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Add a company"
+                  value={newCompany}
+                  onChange={(e) => setNewCompany(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && addCompany()}
+                  className="glass"
+                />
+                <Button onClick={addCompany} className="glow-hover">
+                  Add
                 </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="glass">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 chrome-gradient rounded-full flex items-center justify-center">
-                  <Target className="w-8 h-8 text-background" />
+              </div>
+              {companies.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {companies.map((company, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="px-3 py-1 flex items-center gap-2 glass"
+                    >
+                      <Building className="w-3 h-3" />
+                      {company}
+                      <X
+                        className="w-3 h-3 cursor-pointer hover:text-destructive"
+                        onClick={() => removeCompany(company)}
+                      />
+                    </Badge>
+                  ))}
                 </div>
-                <h3 className="font-semibold mb-2">Select a Career Path</h3>
-                <p className="text-muted-foreground text-sm">
-                  Choose a career from the list to see detailed requirements and set it as your goal
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </div>
+              )}
+            </div>
 
-      {/* Current Goal Status */}
-      {selectedCareerData && (
+            <div className="space-y-2">
+              <Label htmlFor="additional-info">Additional Information</Label>
+              <Textarea
+                id="additional-info"
+                placeholder="Any specific requirements, preferences, or constraints..."
+                value={additionalInfo}
+                onChange={(e) => setAdditionalInfo(e.target.value)}
+                className="glass min-h-[80px]"
+              />
+            </div>
+
+            <Button 
+              onClick={handleGeneratePath}
+              className="w-full glow-hover bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600"
+            >
+              Generate Career Path
+            </Button>
+          </CardContent>
+        </Card>
+
         <Card className="glass">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <span>📈</span>
-              Your Progress Toward {selectedCareerData.title}
+              <Briefcase className="w-5 h-5" />
+              Current Status
             </CardTitle>
             <CardDescription>
-              Track your skill development journey
+              Overview of your career planning progress
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center p-4 glass rounded-lg">
-                <div className="text-2xl font-bold text-primary">65%</div>
-                <p className="text-sm text-muted-foreground">Skills Match</p>
-                <Progress value={65} className="mt-2" />
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 glass rounded-lg">
+                <span className="text-sm">Target Role</span>
+                <span className="font-semibold">{targetRole || 'Not set'}</span>
               </div>
-              <div className="text-center p-4 glass rounded-lg">
-                <div className="text-2xl font-bold text-primary">4/6</div>
-                <p className="text-sm text-muted-foreground">Skills Acquired</p>
-                <Progress value={67} className="mt-2" />
+              <div className="flex items-center justify-between p-3 glass rounded-lg">
+                <span className="text-sm">Industry</span>
+                <span className="font-semibold">{industry || 'Not selected'}</span>
               </div>
-              <div className="text-center p-4 glass rounded-lg">
-                <div className="text-2xl font-bold text-primary">3mo</div>
-                <p className="text-sm text-muted-foreground">Est. Time to Goal</p>
-                <Progress value={33} className="mt-2" />
+              <div className="flex items-center justify-between p-3 glass rounded-lg">
+                <span className="text-sm">Timeline</span>
+                <span className="font-semibold">{timeline || 'Not specified'}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 glass rounded-lg">
+                <span className="text-sm">Dream Companies</span>
+                <span className="font-semibold">{companies.length} added</span>
               </div>
             </div>
+
+            {targetRole && industry && (
+              <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-lg border border-cyan-500/20">
+                <h4 className="font-semibold text-cyan-400 mb-2">Ready to Generate!</h4>
+                <p className="text-sm text-muted-foreground">
+                  You've provided enough information to create your personalized career roadmap.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
+      </div>
+
+      {showVisualization && targetRole && industry && (
+        <CareerPathVisualization
+          targetRole={targetRole}
+          industry={industry}
+          steps={sampleSteps}
+        />
       )}
     </div>
   );
