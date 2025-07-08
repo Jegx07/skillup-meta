@@ -110,6 +110,14 @@ const Dashboard = () => {
     navigate('/career-goals');
   };
 
+  const handleAddNewSkills = () => {
+    navigate('/skills-input');
+  };
+
+  const handleSetCareerGoal = () => {
+    navigate('/career-goals');
+  };
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Hero Section */}
@@ -333,11 +341,15 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Button className="h-24 flex-col gap-3 bg-gradient-to-br from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold rounded-xl glow-hover group">
+            <Button className="h-24 flex-col gap-3 bg-gradient-to-br from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold rounded-xl glow-hover group"
+              onClick={handleAddNewSkills}
+            >
               <span className="text-3xl group-hover:scale-110 transition-transform">📝</span>
               <span>Add New Skills</span>
             </Button>
-            <Button variant="outline" className="h-24 flex-col gap-3 border-border/50 glass-hover group hover:border-purple-500/50 hover:text-purple-400 rounded-xl">
+            <Button variant="outline" className="h-24 flex-col gap-3 border-border/50 glass-hover group hover:border-purple-500/50 hover:text-purple-400 rounded-xl"
+              onClick={handleSetCareerGoal}
+            >
               <span className="text-3xl group-hover:scale-110 transition-transform">🎯</span>
               <span>Set Career Goal</span>
             </Button>
