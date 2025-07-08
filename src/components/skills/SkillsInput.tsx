@@ -141,29 +141,35 @@ const SkillsInput = () => {
             Platform Integrations
           </CardTitle>
           <CardDescription>
-            Import skills from your professional profiles (Coming Soon)
+            Import skills from your professional profiles
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button variant="outline" className="glass glass-hover h-16 flex-col" disabled>
-              <div className="w-8 h-8 bg-blue-600 rounded mb-2 flex items-center justify-center">
-                <span className="text-white text-sm font-bold">in</span>
-              </div>
-              LinkedIn Import
-            </Button>
-            <Button variant="outline" className="glass glass-hover h-16 flex-col" disabled>
-              <div className="w-8 h-8 bg-gray-900 rounded mb-2 flex items-center justify-center">
-                <span className="text-white text-sm font-bold">GH</span>
-              </div>
-              GitHub Analysis
-            </Button>
-            <Button variant="outline" className="glass glass-hover h-16 flex-col" disabled>
-              <div className="w-8 h-8 bg-orange-500 rounded mb-2 flex items-center justify-center">
-                <span className="text-white text-sm font-bold">CV</span>
-              </div>
-              CSV Import
-            </Button>
+            <a href="https://www.linkedin.com/login" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" className="glass glass-hover h-16 flex-col w-full">
+                <div className="w-8 h-8 bg-blue-600 rounded mb-2 flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">in</span>
+                </div>
+                LinkedIn Import
+              </Button>
+            </a>
+            <a href="https://github.com/login" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" className="glass glass-hover h-16 flex-col w-full">
+                <div className="w-8 h-8 bg-gray-900 rounded mb-2 flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">GH</span>
+                </div>
+                GitHub Analysis
+              </Button>
+            </a>
+            <a href="https://www.cvlogin.com/" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" className="glass glass-hover h-16 flex-col w-full">
+                <div className="w-8 h-8 bg-orange-500 rounded mb-2 flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">CV</span>
+                </div>
+                CSV Import
+              </Button>
+            </a>
           </div>
         </CardContent>
       </Card>
@@ -186,11 +192,13 @@ const SkillsInput = () => {
                 variant="secondary"
                 className="px-3 py-1 flex items-center gap-2 glass glass-hover"
               >
-                {skill}
-                <X
-                  className="w-3 h-3 cursor-pointer hover:text-destructive"
-                  onClick={() => removeSkill(skill)}
-                />
+                <span className="flex items-center gap-2">
+                  {skill}
+                  <X
+                    className="w-3 h-3 cursor-pointer hover:text-destructive"
+                    onClick={() => removeSkill(skill)}
+                  />
+                </span>
               </Badge>
             ))}
           </div>
@@ -198,6 +206,15 @@ const SkillsInput = () => {
             <p className="text-muted-foreground text-center py-8">
               No skills added yet. Start by adding your first skill above!
             </p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default SkillsInput;
+
           )}
         </CardContent>
       </Card>
