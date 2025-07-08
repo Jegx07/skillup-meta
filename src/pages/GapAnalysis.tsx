@@ -6,24 +6,43 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Brain, TrendingUp, Target, AlertCircle, Download, Zap, Star, Trophy } from 'lucide-react';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell } from 'recharts';
+import * as dfd from 'danfojs';
 
 const GapAnalysis = () => {
-  // Sample data for charts
-  const radarData = [
-    { skill: 'JavaScript', current: 65, required: 90 },
-    { skill: 'React', current: 45, required: 85 },
-    { skill: 'Node.js', current: 30, required: 75 },
-    { skill: 'Database', current: 70, required: 80 },
-    { skill: 'Cloud', current: 25, required: 70 },
-    { skill: 'DevOps', current: 35, required: 65 },
+  // Example user and required skills
+  const userSkills = [
+    { skill: 'JavaScript', level: 65 },
+    { skill: 'React', level: 45 },
+    { skill: 'Node.js', level: 30 },
+    { skill: 'Database', level: 70 },
+    { skill: 'Cloud', level: 25 },
+    { skill: 'DevOps', level: 35 },
+  ];
+  const requiredSkills = [
+    { skill: 'JavaScript', required: 90 },
+    { skill: 'React', required: 85 },
+    { skill: 'Node.js', required: 75 },
+    { skill: 'Database', required: 80 },
+    { skill: 'Cloud', required: 70 },
+    { skill: 'DevOps', required: 65 },
   ];
 
-  const barData = [
-    { name: 'JavaScript Frameworks', current: 30, required: 100, gap: 70 },
-    { name: 'Cloud Computing', current: 55, required: 100, gap: 45 },
-    { name: 'Data Analysis', current: 80, required: 100, gap: 20 },
-    { name: 'Machine Learning', current: 15, required: 100, gap: 85 },
-  ];
+  // Create DataFrames
+  const userDF = new dfd.DataFrame(userSkills);
+  const reqDF = new dfd.DataFrame(requiredSkills);
+  // Merge on skill
+  const mergedDF = dfd.merge({ left: userDF, right: reqDF, on: ['skill'], how: 'inner' });
+  // Calculate gap
+  mergedDF.addColumn('gap', mergedDF['required'].map((req, i) => req - mergedDF['level'].iloc[i]), { inplace: true });
+
+  // Prepare data for charts
+  const radarData = mergedDF.toJSON();
+  const barData = mergedDF.toJSON().map((row: any) => ({
+    name: row.skill,
+    current: row.level,
+    required: row.required,
+    gap: row.gap,
+  }));
 
   const skillDistribution = [
     { name: 'Proficient', value: 35, color: '#00ffae' },
@@ -154,7 +173,7 @@ const GapAnalysis = () => {
                   />
                   <Radar
                     name="Current"
-                    dataKey="current"
+                    dataKey="level"
                     stroke="#00ffae"
                     fill="#00ffae"
                     fillOpacity={0.2}
