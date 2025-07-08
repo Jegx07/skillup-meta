@@ -15,6 +15,7 @@ import Recommendations from "./pages/Recommendations";
 import Progress from "./pages/Progress";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import { UserSkillsProvider } from './components/skills/UserSkillsContext';
 
 const queryClient = new QueryClient();
 
@@ -23,23 +24,25 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/" element={<Layout />}>
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="skills-input" element={<SkillsInput />} />
-            <Route path="career-goals" element={<CareerGoals />} />
-            <Route path="gap-analysis" element={<GapAnalysis />} />
-            <Route path="recommendations" element={<Recommendations />} />
-            <Route path="progress" element={<Progress />} />
-            <Route path="profile" element={<Profile />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <UserSkillsProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/" element={<Layout />}>
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="skills-input" element={<SkillsInput />} />
+              <Route path="career-goals" element={<CareerGoals />} />
+              <Route path="gap-analysis" element={<GapAnalysis />} />
+              <Route path="recommendations" element={<Recommendations />} />
+              <Route path="progress" element={<Progress />} />
+              <Route path="profile" element={<Profile />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </UserSkillsProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
