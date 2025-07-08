@@ -1,12 +1,13 @@
-
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, Zap, Target, TrendingUp, Clock, CheckCircle, PlayCircle, AlertCircle, Sparkles } from 'lucide-react';
+import { Star, Zap, Target, TrendingUp, Clock, CheckCircle, PlayCircle, AlertCircle, Sparkles, UserCircle } from 'lucide-react';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const skillStats = {
     mastered: 12,
     inProgress: 8,
@@ -101,6 +102,14 @@ const Dashboard = () => {
     }
   };
 
+  const handleStartAnalysis = () => {
+    navigate('/gap-analysis');
+  };
+
+  const handleViewGoals = () => {
+    navigate('/career-goals');
+  };
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Hero Section */}
@@ -109,16 +118,19 @@ const Dashboard = () => {
         <div className="relative glass p-8 rounded-3xl border border-border/50">
           <div className="flex items-center justify-between">
             <div className="space-y-4">
-              <h1 className="text-4xl font-bold">
+              <h1 className="text-4xl font-bold flex items-center gap-2">
                 <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
                   Welcome back, John!
                 </span>
-                <span className="ml-3 text-3xl">🚀</span>
+                <Sparkles className="ml-3 h-8 w-8 text-purple-400 drop-shadow-md" />
               </h1>
               <p className="text-xl text-muted-foreground/80 font-medium">
                 Let's bridge your skills to your dream career.
               </p>
-              <Button className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 group">
+              <Button
+                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 group hover:scale-105 transition-transform duration-200"
+                onClick={handleStartAnalysis}
+              >
                 <Sparkles className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
                 Start Analysis
               </Button>
@@ -146,7 +158,7 @@ const Dashboard = () => {
           <CardContent>
             <div className="text-3xl font-bold text-green-400">{skillStats.mastered}</div>
             <p className="text-xs text-green-400/70 flex items-center mt-1">
-              <TrendingUp className="h-3 w-3 mr-1" />
+              <span className="mr-1 text-base">🚀</span>
               +2 from last week
             </p>
           </CardContent>
@@ -268,7 +280,9 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
-            <Button className="w-full mt-6 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-xl glow-hover">
+            <Button className="w-full mt-6 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-xl glow-hover"
+              onClick={handleViewGoals}
+            >
               <Target className="mr-2 h-4 w-4" />
               View All Goals
             </Button>
