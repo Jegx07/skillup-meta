@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,10 +6,12 @@ import { Progress } from '@/components/ui/progress';
 import { Brain, TrendingUp, Target, AlertCircle, Download, Zap, Star, Trophy } from 'lucide-react';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import * as dfd from 'danfojs';
+import { useUserSkills } from '../components/skills/UserSkillsContext';
 
 const GapAnalysis = () => {
-  // Example user and required skills
-  const userSkills = [
+  const { skills: userSkills } = useUserSkills();
+  // Fallback if no user skills are present
+  const defaultSkills = [
     { skill: 'JavaScript', level: 65 },
     { skill: 'React', level: 45 },
     { skill: 'Node.js', level: 30 },
@@ -18,6 +19,7 @@ const GapAnalysis = () => {
     { skill: 'Cloud', level: 25 },
     { skill: 'DevOps', level: 35 },
   ];
+  const userSkillsData = userSkills.length > 0 ? userSkills : defaultSkills;
   const requiredSkills = [
     { skill: 'JavaScript', required: 90 },
     { skill: 'React', required: 85 },
@@ -28,16 +30,18 @@ const GapAnalysis = () => {
   ];
 
   // Create DataFrames
-  const userDF = new dfd.DataFrame(userSkills);
+  const userDF = new dfd.DataFrame(userSkillsData);
   const reqDF = new dfd.DataFrame(requiredSkills);
   // Merge on skill
   const mergedDF = dfd.merge({ left: userDF, right: reqDF, on: ['skill'], how: 'inner' });
   // Calculate gap
-  mergedDF.addColumn('gap', mergedDF['required'].map((req, i) => req - mergedDF['level'].iloc[i]), { inplace: true });
+  const requiredArr = mergedDF.column('required').values as number[];
+  const levelArr = mergedDF.column('level').values as number[];
+  mergedDF.addColumn('gap', requiredArr.map((req, i) => req - levelArr[i]), { inplace: true });
 
   // Prepare data for charts
-  const radarData = mergedDF.toJSON();
-  const barData = mergedDF.toJSON().map((row: any) => ({
+  const radarData = Array.from(mergedDF.toJSON() as any[]);
+  const barData = radarData.map((row: any) => ({
     name: row.skill,
     current: row.level,
     required: row.required,
