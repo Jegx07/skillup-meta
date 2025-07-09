@@ -3,13 +3,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Brain, TrendingUp, Target, AlertCircle, Download, Zap, Star, Trophy } from 'lucide-react';
-import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell } from 'recharts';
-import * as dfd from 'danfojs';
+import { Brain, TrendingUp, Target, Download, Zap, Star, Trophy } from 'lucide-react';
 import { useUserSkills } from '../components/skills/UserSkillsContext';
+import {
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend,
+  PieChart, Pie, Cell, ResponsiveContainer
+} from 'recharts';
+
+const COLORS = ['#00ffae', '#00bfff', '#ff4c4c'];
 
 const GapAnalysis = () => {
   const { skills: userSkills } = useUserSkills();
+
   // Fallback if no user skills are present
   const defaultSkills = [
     { skill: 'JavaScript', level: 65 },
@@ -29,31 +35,32 @@ const GapAnalysis = () => {
     { skill: 'DevOps', required: 65 },
   ];
 
-  // Create DataFrames
-  const userDF = new dfd.DataFrame(userSkillsData);
-  const reqDF = new dfd.DataFrame(requiredSkills);
-  // Merge on skill
-  const mergedDF = dfd.merge({ left: userDF, right: reqDF, on: ['skill'], how: 'inner' });
-  // Calculate gap
-  const requiredArr = mergedDF.column('required').values as number[];
-  const levelArr = mergedDF.column('level').values as number[];
-  mergedDF.addColumn('gap', requiredArr.map((req, i) => req - levelArr[i]), { inplace: true });
+  // Calculate gaps and prepare data for charts
+  const radarData = userSkillsData.map(userSkill => {
+    const req = requiredSkills.find(r => r.skill === userSkill.skill);
+    return {
+      skill: userSkill.skill,
+      Current: userSkill.level,
+      Required: req ? req.required : 80,
+      Gap: req ? req.required - userSkill.level : 0,
+    };
+  });
 
-  // Prepare data for charts
-  const radarData = Array.from(mergedDF.toJSON() as any[]);
-  const barData = radarData.map((row: any) => ({
-    name: row.skill,
-    current: row.level,
-    required: row.required,
-    gap: row.gap,
+  const barData = radarData.map(row => ({
+    skill: row.skill,
+    Current: row.Current,
+    Gap: row.Gap,
+    Required: row.Required,
   }));
 
+  // Pie chart: Skill proficiency distribution
   const skillDistribution = [
-    { name: 'Proficient', value: 35, color: '#00ffae' },
-    { name: 'Intermediate', value: 25, color: '#00bfff' },
-    { name: 'Beginner', value: 40, color: '#ff4c4c' },
+    { name: 'Proficient', value: userSkillsData.filter(s => s.level >= 70).length },
+    { name: 'Intermediate', value: userSkillsData.filter(s => s.level >= 40 && s.level < 70).length },
+    { name: 'Beginner', value: userSkillsData.filter(s => s.level < 40).length },
   ];
 
+  // Compact Priority Skills
   const prioritySkills = [
     {
       name: 'React.js',
@@ -61,8 +68,7 @@ const GapAnalysis = () => {
       gap: 70,
       timeToLearn: '3-4 months',
       aiTip: 'Focus on hooks and state management',
-      icon: <Zap className="w-5 h-5" />,
-      color: 'destructive'
+      icon: <Zap className="w-5 h-5" />, color: 'destructive'
     },
     {
       name: 'AWS Certification',
@@ -70,8 +76,7 @@ const GapAnalysis = () => {
       gap: 45,
       timeToLearn: '2-3 months',
       aiTip: 'Start with EC2 and S3 fundamentals',
-      icon: <Star className="w-5 h-5" />,
-      color: 'yellow'
+      icon: <Star className="w-5 h-5" />, color: 'yellow'
     },
     {
       name: 'Machine Learning',
@@ -79,8 +84,7 @@ const GapAnalysis = () => {
       gap: 20,
       timeToLearn: '1-2 months',
       aiTip: 'Python basics will accelerate learning',
-      icon: <Trophy className="w-5 h-5" />,
-      color: 'green'
+      icon: <Trophy className="w-5 h-5" />, color: 'green'
     }
   ];
 
@@ -106,20 +110,19 @@ const GapAnalysis = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">Overall Skill Score</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black text-primary mb-2">72/100</div>
-            <Progress value={72} className="h-2 mb-2" />
+            <div className="text-3xl font-black text-primary mb-2">{Math.round((userSkillsData.reduce((a, b) => a + b.level, 0) / userSkillsData.length) || 0)}/100</div>
+            <Progress value={Math.round((userSkillsData.reduce((a, b) => a + b.level, 0) / userSkillsData.length) || 0)} className="h-2 mb-2" />
             <p className="text-xs text-muted-foreground">+12% from last month</p>
           </CardContent>
         </Card>
-
         <Card className="glass glow-hover border-yellow-500/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Critical Gaps</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black text-yellow-500 mb-2">4</div>
+            <div className="text-3xl font-black text-yellow-500 mb-2">{radarData.filter(s => s.Gap > 30).length}</div>
             <div className="flex gap-1 mb-2">
-              {[1, 2, 3, 4].map((i) => (
+              {[...Array(radarData.filter(s => s.Gap > 30).length)].map((_, i) => (
                 <div key={i} className="w-6 h-1 bg-yellow-500 rounded-full"></div>
               ))}
               <div className="w-6 h-1 bg-muted rounded-full"></div>
@@ -127,7 +130,6 @@ const GapAnalysis = () => {
             <p className="text-xs text-muted-foreground">High priority skills needed</p>
           </CardContent>
         </Card>
-
         <Card className="glass glow-hover border-green-500/20">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Est. Learning Time</CardTitle>
@@ -143,75 +145,75 @@ const GapAnalysis = () => {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Radar Chart */}
         <Card className="glass glow-hover">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Brain className="w-5 h-5 text-primary" />
-              Skill Coverage Analysis
+              Skill Coverage (Radar)
             </CardTitle>
             <CardDescription>
-              Current vs Required skill levels across key competencies
+              Current vs Required skill levels
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
+            <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={radarData}>
+                <RadarChart data={radarData} outerRadius={90}>
                   <PolarGrid stroke="#333" />
                   <PolarAngleAxis dataKey="skill" tick={{ fill: '#888', fontSize: 12 }} />
-                  <PolarRadiusAxis 
-                    angle={90} 
-                    domain={[0, 100]} 
-                    tick={{ fill: '#888', fontSize: 10 }}
-                    tickCount={5}
-                  />
-                  <Radar
-                    name="Required"
-                    dataKey="required"
-                    stroke="#00bfff"
-                    fill="#00bfff"
-                    fillOpacity={0.1}
-                    strokeWidth={2}
-                  />
-                  <Radar
-                    name="Current"
-                    dataKey="level"
-                    stroke="#00ffae"
-                    fill="#00ffae"
-                    fillOpacity={0.2}
-                    strokeWidth={2}
-                  />
+                  <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: '#888', fontSize: 10 }} tickCount={5} />
+                  <Radar name="Required" dataKey="Required" stroke="#00bfff" fill="#00bfff" fillOpacity={0.1} strokeWidth={2} />
+                  <Radar name="Current" dataKey="Current" stroke="#00ffae" fill="#00ffae" fillOpacity={0.2} strokeWidth={2} />
+                  <Legend />
+                  <RechartsTooltip />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex justify-center gap-6 mt-4">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-[#00ffae] rounded-full"></div>
-                <span className="text-sm text-muted-foreground">Current Level</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-[#00bfff] rounded-full"></div>
-                <span className="text-sm text-muted-foreground">Required Level</span>
-              </div>
+          </CardContent>
+        </Card>
+        {/* Bar Chart */}
+        <Card className="glass glow-hover">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-primary" />
+              Gap by Skill (Bar)
+            </CardTitle>
+            <CardDescription>
+              Current, Required, and Gap per skill
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={barData} margin={{ top: 20, right: 30, left: 0, bottom: 30 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                  <XAxis dataKey="skill" tick={{ fill: '#888', fontSize: 12 }} />
+                  <YAxis tick={{ fill: '#888', fontSize: 12 }} />
+                  <RechartsTooltip />
+                  <Legend />
+                  <Bar dataKey="Current" fill="#00ffae" name="Current Level" />
+                  <Bar dataKey="Gap" fill="#ff4c4c" name="Gap to Close" />
+                  <Bar dataKey="Required" fill="#00bfff" name="Required Level" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
-
-        {/* Skill Distribution Pie Chart */}
+        {/* Pie Chart */}
         <Card className="glass glow-hover">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="w-5 h-5 text-primary" />
-              Skill Proficiency Distribution
+              Skill Proficiency (Pie)
             </CardTitle>
             <CardDescription>
-              Breakdown of your current skill mastery levels
+              Distribution of your skill mastery
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
+            <div className="h-72 flex flex-col items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -219,82 +221,26 @@ const GapAnalysis = () => {
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
-                    outerRadius={120}
+                    outerRadius={90}
                     paddingAngle={5}
                     dataKey="value"
+                    nameKey="name"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
                     {skillDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: '#1a1a1a',
-                      border: '1px solid #333',
-                      borderRadius: '8px'
-                    }}
-                  />
+                  <Legend />
+                  <RechartsTooltip />
                 </PieChart>
               </ResponsiveContainer>
-            </div>
-            <div className="grid grid-cols-3 gap-4 mt-4">
-              {skillDistribution.map((item, index) => (
-                <div key={index} className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: item.color }}
-                    ></div>
-                    <span className="text-sm font-medium">{item.value}%</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">{item.name}</div>
-                </div>
-              ))}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Gap Analysis Bar Chart */}
-      <Card className="glass glow-hover">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-primary" />
-            Detailed Gap Analysis
-          </CardTitle>
-          <CardDescription>
-            Skill-by-skill breakdown showing current proficiency vs market requirements
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis 
-                  dataKey="name" 
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  tick={{ fill: '#888', fontSize: 12 }}
-                />
-                <YAxis tick={{ fill: '#888', fontSize: 12 }} />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: '#1a1a1a',
-                    border: '1px solid #333',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Bar dataKey="current" fill="#00ffae" name="Current Level" />
-                <Bar dataKey="gap" fill="#ff4c4c" name="Gap to Close" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Priority Skills Section */}
+      {/* Priority Skills Section - Compact Cards */}
       <Card className="glass glow-hover">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -305,50 +251,66 @@ const GapAnalysis = () => {
             AI-recommended skills to focus on for maximum career impact
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {prioritySkills.map((skill, index) => (
-            <div key={index} className="glass rounded-xl p-4 border border-border/30 hover:border-primary/30 transition-all duration-300">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-4">
-                  <div className={`p-2 rounded-lg glass ${
-                    skill.color === 'destructive' ? 'text-destructive' :
-                    skill.color === 'yellow' ? 'text-yellow-500' : 'text-green-500'
-                  }`}>
-                    {skill.icon}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-lg">{skill.name}</h3>
-                      <Badge variant={skill.color === 'destructive' ? 'destructive' : 'secondary'}>
-                        {skill.priority} Priority
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">{skill.aiTip}</p>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span>Gap: {skill.gap}%</span>
-                      <span>•</span>
-                      <span>Est. Time: {skill.timeToLearn}</span>
-                    </div>
-                  </div>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {prioritySkills.map((skill, index) => (
+              <div key={index} className="glass rounded-xl p-4 border border-border/30 hover:border-primary/30 transition-all duration-300 flex flex-col items-center text-center">
+                <div className={`p-2 rounded-lg glass mb-2 ${
+                  skill.color === 'destructive' ? 'text-destructive' :
+                  skill.color === 'yellow' ? 'text-yellow-500' : 'text-green-500'
+                }`}>
+                  {skill.icon}
                 </div>
-                <div className="text-right">
-                  <div className={`text-2xl font-bold ${
-                    skill.color === 'destructive' ? 'text-destructive' :
-                    skill.color === 'yellow' ? 'text-yellow-500' : 'text-green-500'
-                  }`}>
-                    {skill.gap}%
-                  </div>
-                  <div className="text-xs text-muted-foreground">Gap</div>
+                <h3 className="font-semibold text-lg mb-1">{skill.name}</h3>
+                <Badge variant={skill.color === 'destructive' ? 'destructive' : 'secondary'} className="mb-1">
+                  {skill.priority} Priority
+                </Badge>
+                <p className="text-xs text-muted-foreground mb-2">{skill.aiTip}</p>
+                <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
+                  <span>Gap: <span className="font-bold">{skill.gap}%</span></span>
+                  <span>Est. Time: <span className="font-bold">{skill.timeToLearn}</span></span>
                 </div>
+                <Progress value={100 - skill.gap} className="h-2 mt-2 w-full" />
               </div>
-              <div className="mt-3">
-                <Progress 
-                  value={100 - skill.gap} 
-                  className="h-2"
-                />
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Gap Analysis Table */}
+      <Card className="glass glow-hover">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-primary" />
+            Detailed Gap Analysis Table
+          </CardTitle>
+          <CardDescription>
+            Skill-by-skill breakdown showing current proficiency vs market requirements
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm text-left border-collapse">
+              <thead>
+                <tr className="bg-muted/30">
+                  <th className="px-4 py-2 font-semibold">Skill</th>
+                  <th className="px-4 py-2 font-semibold">Current Level</th>
+                  <th className="px-4 py-2 font-semibold">Required Level</th>
+                  <th className="px-4 py-2 font-semibold">Gap</th>
+                </tr>
+              </thead>
+              <tbody>
+                {radarData.map((row, idx) => (
+                  <tr key={row.skill} className={idx % 2 === 0 ? 'bg-background' : 'bg-muted/10'}>
+                    <td className="px-4 py-2 font-medium">{row.skill}</td>
+                    <td className="px-4 py-2">{row.Current}%</td>
+                    <td className="px-4 py-2">{row.Required}%</td>
+                    <td className={`px-4 py-2 font-bold ${row.Gap > 30 ? 'text-destructive' : row.Gap > 15 ? 'text-yellow-500' : 'text-green-500'}`}>{row.Gap}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
 
