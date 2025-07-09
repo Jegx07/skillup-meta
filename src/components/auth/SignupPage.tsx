@@ -23,9 +23,9 @@ const SignupPage = () => {
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate signup success and redirect to dashboard
+    // Simulate signup success and redirect to personal details page
     console.log('Signup attempt:', formData);
-    navigate('/dashboard');
+    navigate('/personal-details');
   };
 
   return (
