@@ -15,6 +15,7 @@ import Recommendations from "./pages/Recommendations";
 import Progress from "./pages/Progress";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import PersonalDetails from "./pages/PersonalDetails";
 import { UserSkillsProvider } from './components/skills/UserSkillsContext';
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/personal-details" element={<PersonalDetails />} />
             <Route path="/" element={<Layout />}>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="skills-input" element={<SkillsInput />} />
