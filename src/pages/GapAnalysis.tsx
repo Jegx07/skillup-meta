@@ -10,11 +10,13 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend,
   PieChart, Pie, Cell, ResponsiveContainer
 } from 'recharts';
+import { useNavigate } from 'react-router-dom';
 
 const COLORS = ['#00ffae', '#00bfff', '#ff4c4c'];
 
 const GapAnalysis = () => {
   const { skills: userSkills } = useUserSkills();
+  const navigate = useNavigate();
 
   // Fallback if no user skills are present
   const defaultSkills = [
@@ -320,7 +322,7 @@ const GapAnalysis = () => {
           <Download className="w-5 h-5 mr-2" />
           Generate Detailed Report
         </Button>
-        <Button variant="outline" className="flex-1 glass glass-hover h-12 text-base font-semibold">
+        <Button variant="outline" className="flex-1 glass glass-hover h-12 text-base font-semibold" onClick={() => navigate('/recommendations')}>
           <Brain className="w-5 h-5 mr-2" />
           View Learning Recommendations
         </Button>
