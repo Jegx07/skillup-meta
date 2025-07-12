@@ -25,7 +25,7 @@ const PersonalDetails = () => {
     e.preventDefault();
     localStorage.setItem('personalDetails', JSON.stringify(formData));
     setSubmitted(true);
-    setTimeout(() => navigate('/dashboard'), 1500);
+    setTimeout(() => navigate('/skills'), 1500);
   };
 
   return (
