@@ -12,6 +12,10 @@ const SkillsInput = () => {
   const [manualSkills, setManualSkills] = useState('');
   const [newSkill, setNewSkill] = useState('');
   const [newLevel, setNewLevel] = useState(50);
+  const [resumeFileName, setResumeFileName] = useState<string | null>(null);
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null);
+  const [resumeError, setResumeError] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleAddSkill = () => {
     if (newSkill.trim() && !skills.find(s => s.skill === newSkill.trim())) {
@@ -28,8 +32,35 @@ const SkillsInput = () => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      console.log('File uploaded:', file.name);
+      setResumeFileName(file.name);
+      setResumeUrl(null);
+      setResumeError(null);
       // Placeholder for file processing logic
+      // You can add your file parsing logic here
+    }
+  };
+
+  const handleBrowseFilesClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFromUrlClick = async () => {
+    const url = window.prompt('Enter the public URL to your resume (PDF, DOC, DOCX):');
+    if (!url) return;
+    setResumeError(null);
+    setResumeFileName(null);
+    setResumeUrl(null);
+    try {
+      // Try to fetch the file to check if it's accessible
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch file from URL');
+      // Optionally, check content-type or size here
+      setResumeUrl(url);
+      setResumeFileName(null);
+      setResumeError(null);
+      // Placeholder: You can process the file here (e.g., read as blob, parse, etc.)
+    } catch (err: any) {
+      setResumeError('Could not fetch file from the provided URL. Please check the link.');
     }
   };
 
@@ -121,20 +152,30 @@ const SkillsInput = () => {
                 className="hidden"
                 accept=".pdf,.doc,.docx"
                 onChange={handleFileUpload}
+                ref={fileInputRef}
               />
               <label htmlFor="resume-upload">
                 <Button className="glow-hover" asChild>
                   <span>Choose File</span>
                 </Button>
               </label>
+              {resumeFileName && (
+                <div className="mt-2 text-green-600 text-sm">Selected: {resumeFileName}</div>
+              )}
+              {resumeUrl && (
+                <div className="mt-2 text-green-600 text-sm">Fetched from URL: {resumeUrl}</div>
+              )}
+              {resumeError && (
+                <div className="mt-2 text-red-600 text-sm">{resumeError}</div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" className="glass glass-hover">
+              <Button variant="outline" className="glass glass-hover" onClick={handleBrowseFilesClick}>
                 <Upload className="w-4 h-4 mr-2" />
                 Browse Files
               </Button>
-              <Button variant="outline" className="glass glass-hover">
+              <Button variant="outline" className="glass glass-hover" onClick={handleFromUrlClick}>
                 <Link2 className="w-4 h-4 mr-2" />
                 From URL
               </Button>
