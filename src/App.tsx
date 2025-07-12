@@ -17,7 +17,7 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import PersonalDetails from "./pages/PersonalDetails";
 import SkillsPage from "./pages/SkillsPage";
-import { UserSkillsProvider } from './components/skills/UserSkillsContext';
+import { UserSkillsProvider } from "./components/skills/UserSkillsContext";
 
 const queryClient = new QueryClient();
 
