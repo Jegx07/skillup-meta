@@ -650,7 +650,10 @@ const CareerGoals = () => {
             <Input
               placeholder="Search career paths..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setSelectedCareer(null); // Clear career details after search
+              }}
               className="pl-10 glass"
             />
           </div>
