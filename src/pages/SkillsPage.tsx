@@ -75,6 +75,15 @@ const SkillsPage = () => {
     }
   };
 
+  const [skillLevels, setSkillLevels] = useState<{ [key: string]: number }>({});
+
+  const handleSkillLevelChange = (skillName: string, level: number) => {
+    setSkillLevels(prev => ({
+      ...prev,
+      [skillName]: level
+    }));
+  };
+
   const handleRemoveSkill = (skillName: string) => {
     removeSkill(skillName);
   };
@@ -274,6 +283,22 @@ const SkillsPage = () => {
                             {isAdded && <CheckCircle className="w-4 h-4 text-primary" />}
                           </div>
                           
+                          {!isAdded && (
+                            <div className="space-y-2 mb-3">
+                              <div className="flex justify-between text-sm">
+                                <span>Proficiency</span>
+                                <span>{skillLevels[skill] || 50}%</span>
+                              </div>
+                              <Slider
+                                value={[skillLevels[skill] || 50]}
+                                onValueChange={(value) => handleSkillLevelChange(skill, value[0])}
+                                max={100}
+                                step={5}
+                                className="w-full"
+                              />
+                            </div>
+                          )}
+                          
                           {isAdded && (
                             <div className="space-y-2">
                               <div className="flex justify-between text-sm">
@@ -281,6 +306,22 @@ const SkillsPage = () => {
                                 <span>{level}%</span>
                               </div>
                               <Progress value={level} className="h-2" />
+                              <div className="space-y-2">
+                                <Slider
+                                  value={[level]}
+                                  onValueChange={(value) => {
+                                    const updatedSkills = skills.map(s => 
+                                      s.skill === skill ? { ...s, level: value[0] } : s
+                                    );
+                                    // Update the skill level in the context
+                                    removeSkill(skill);
+                                    addSkill({ skill, level: value[0] });
+                                  }}
+                                  max={100}
+                                  step={5}
+                                  className="w-full"
+                                />
+                              </div>
                             </div>
                           )}
                           
@@ -288,7 +329,7 @@ const SkillsPage = () => {
                             {!isAdded ? (
                               <Button
                                 size="sm"
-                                onClick={() => handleAddSkill(skill)}
+                                onClick={() => handleAddSkill(skill, skillLevels[skill] || 50)}
                                 className="flex-1 glow-hover"
                               >
                                 <Plus className="w-3 h-3 mr-1" />
